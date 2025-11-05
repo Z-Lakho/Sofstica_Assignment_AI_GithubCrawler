@@ -40,7 +40,7 @@ def get_github_client(token: str) -> Client:
 def fetch_repos(client: Client, target_count: int = 100000) -> List[Dict[str, Any]]:
     repos = []
     query = "stars:>0"  
-    first = 100
+    first = 1000
     after = None
     fetched = 0
 
