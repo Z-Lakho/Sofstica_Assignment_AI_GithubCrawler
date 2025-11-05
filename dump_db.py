@@ -2,7 +2,6 @@ import os
 import csv
 import psycopg2
 
-# Ensure the file is saved in the current working directory
 output_path = "repos.csv"
 
 conn = psycopg2.connect(
@@ -17,7 +16,6 @@ cur = conn.cursor()
 cur.execute("SELECT name_with_owner, stargazer_count FROM repositories;")
 rows = cur.fetchall()
 
-# Write to CSV
 with open(output_path, 'w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     writer.writerow(['name_with_owner', 'stargazer_count'])
@@ -26,6 +24,6 @@ with open(output_path, 'w', newline='', encoding='utf-8') as f:
 cur.close()
 conn.close()
 
-# Confirm file created
 print(f"CSV saved to: {os.path.abspath(output_path)}")
 print(f"File exists: {os.path.exists(output_path)}")
+print(f"Rows exported: {len(rows)}")
