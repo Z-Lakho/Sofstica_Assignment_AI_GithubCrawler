@@ -78,26 +78,37 @@ def fetch_repos(client: Client, target_count: int = 100000) -> List[Dict[str, An
     return repos
 
 def upsert_repos_to_db(repos: List[Dict[str, Any]], db_host: str, db_port: int, db_name: str, db_user: str, db_pass: str):
-    conn = psycopg2.connect(
-        host=db_host, port=db_port, dbname=db_name, user=db_user, password=db_pass
-    )
-    cur = conn.cursor()
+    try:
+        print(f"[DB] Connecting to: {db_host}:{db_port}/{db_name}")
+        conn = psycopg2.connect(
+            host=db_host, port=db_port, dbname=db_name, user=db_user, password=db_pass
+        )
+        print("[DB] Connected successfully!")
+        
+        cur = conn.cursor()
 
-    data = [(repo["name_with_owner"], repo["stargazer_count"]) for repo in repos]
+        data = [
+            (repo["name_with_owner"], repo["stargazer_count"], "NOW()")
+            for repo in repos
+        ]
 
-    upsert_query = """
-    INSERT INTO repositories (name_with_owner, stargazer_count, updated_at)
-    VALUES %s
-    ON CONFLICT (name_with_owner)
-    DO UPDATE SET
-        stargazer_count = EXCLUDED.stargazer_count,
-        updated_at = CURRENT_TIMESTAMP
-    """
-    execute_values(cur, upsert_query, data)
-    conn.commit()
-    cur.close()
-    conn.close()
-    print(f"[DEBUG] Upserted {len(data)} repos to DB")
+        upsert_query = """
+        INSERT INTO repositories (name_with_owner, stargazer_count, updated_at)
+        VALUES %s
+        ON CONFLICT (name_with_owner)
+        DO UPDATE SET
+            stargazer_count = EXCLUDED.stargazer_count,
+            updated_at = CURRENT_TIMESTAMP
+        """
+        execute_values(cur, upsert_query, data)
+        conn.commit()
+        print(f"[DB] SUCCESS: Upserted {len(data)} repos")
+        
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        raise e
 
 if __name__ == "__main__":
     token = os.getenv("GITHUB_TOKEN")
