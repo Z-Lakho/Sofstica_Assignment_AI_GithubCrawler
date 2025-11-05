@@ -1,6 +1,6 @@
 name: GitHub Crawler
 
-on: [push]  # Trigger on push
+on: [push]
 
 jobs:
   crawl:
@@ -39,14 +39,13 @@ jobs:
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: |
           psql $POSTGRES_URL -f .github/workflows/setup.sql
-        env:
-          POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/postgres
 
       - name: Crawl Stars
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Default token, no secrets needed
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_DB: postgres
