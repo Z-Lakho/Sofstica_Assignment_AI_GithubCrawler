@@ -43,23 +43,6 @@ jobs:
         run: |
           psql $POSTGRES_URL -f .github/workflows/setup.sql
 
-      - name: Wait for Postgres & Verify
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        run: |
-          until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do
-            echo "Waiting for Postgres..."
-            sleep 2
-          done
-          echo "Postgres is ready!"
-          psql postgresql://postgres:postgres@localhost:5432/postgres -c "\dt"
-          psql postgresql://postgres:postgres@localhost:5432/postgres -c "INSERT INTO repositories (name_with_owner, stargazer_count) VALUES ('test/repo', 999) ON CONFLICT DO NOTHING;"
-          psql postgresql://postgres:postgres@localhost:5432/postgres -c "SELECT COUNT(*) FROM repositories;"
-
       - name: Crawl Stars
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,14 +61,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         run: python dump_db.py
-
-      - name: List files (Debug)
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Files:"
-          ls -la
-          [ -f repos.csv ] && echo "repos.csv EXISTS!" || echo "MISSING!"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

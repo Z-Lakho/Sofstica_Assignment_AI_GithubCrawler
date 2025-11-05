@@ -39,7 +39,7 @@ def get_github_client(token: str) -> Client:
 
 def fetch_repos(client: Client, target_count: int = 100000) -> List[Dict[str, Any]]:
     repos = []
-    query = "language:*"
+    query = "stars:>0"  
     first = 100
     after = None
     fetched = 0
@@ -49,6 +49,7 @@ def fetch_repos(client: Client, target_count: int = 100000) -> List[Dict[str, An
             params = {"query": query, "first": first, "after": after}
             result = client.execute(SEARCH_QUERY, variable_values=params)
             edges = result["search"]["edges"]
+            
             for edge in edges:
                 repo = edge["node"]
                 repos.append({
@@ -64,10 +65,10 @@ def fetch_repos(client: Client, target_count: int = 100000) -> List[Dict[str, An
                 break
             after = page_info["endCursor"]
 
-            time.sleep(1)  
+            time.sleep(1)  # Safe rate limit
 
         except Exception as e:
-            logger.error(f"Error: {e}")
+            print(f"[FETCH ERROR] {e}")
             time.sleep(60)
             continue
 
